@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#122C4A">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<title>Meine Finanzen</title>
+<style>
+  :root{
+    --bg:#F2F4F8;
+    --card:#FFFFFF;
+    --ink:#16233A;
+    --muted:#6B7686;
+    --faint:#9AA3B2;
+    --primary:#1F4E78;
+    --primary-ink:#123152;
+    --accent:#C9922A;
+    --accent-ink:#8F6512;
+    --danger:#D64550;
+    --danger-bg:#FCEBEC;
+    --success:#2E9E4F;
+    --success-bg:#EAF7EE;
+    --border:#E6EAF0;
+    --radius:18px;
+    --shadow: 0 1px 2px rgba(16,32,55,.04), 0 8px 24px -12px rgba(16,32,55,.15);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding-bottom:48px;
+  }
+  .app{
+    max-width:480px;
+    margin:0 auto;
+    padding:calc(env(safe-area-inset-top) + 16px) 16px 24px;
+  }
+  /* ---------- Header ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:14px;
+  }
+  .topbar h1{
+    font-size:20px;
+    font-weight:800;
+    letter-spacing:-.01em;
+    margin:0;
+  }
+  .icon-btn{
+    width:36px;height:36px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:var(--card);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .month-nav{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    margin-bottom:16px;
+    color:var(--muted);
+    font-size:13px;
+    font-weight:600;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+  }
+  .month-nav button{
+    width:30px;height:30px;
+    border-radius:50%;
+    border:none;
+    background:var(--card);
+    box-shadow:var(--shadow);
+    color:var(--primary);
+    font-size:15px;
+    cursor:pointer;
+  }
+  .month-nav .label{
+    min-width:140px;
+    text-align:center;
+    color:var(--ink);
+  }
+  /* ---------- Cards ---------- */
+  .card{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:18px;
+    margin-bottom:14px;
+  }
+  .card h2{
+    font-size:13px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--muted);
+    margin:0 0 12px;
+    font-weight:700;
+  }
+  /* ---------- Hero ring ---------- */
+  .hero{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:22px 18px 8px;
+  }
+  .ring-wrap{
+    position:relative;
+    width:200px;height:200px;
+    border-radius:50%;
+    margin-bottom:6px;
+  }
+  .ring{
+    width:200px;height:200px;
+    border-radius:50%;
+  }
+  .ring-hole{
+    position:absolute;
+    top:16px;left:16px;right:16px;bottom:16px;
+    background:var(--card);
+    border-radius:50%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+  }
+  .ring-hole .amount{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+    line-height:1.1;
+  }
+  .ring-hole .amount.negative{ color:var(--danger); }
+  .ring-hole .caption{
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--muted);
+    font-weight:700;
+    margin-top:4px;
+  }
+  .legend{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    justify-content:center;
+    margin-top:14px;
+    font-size:12.5px;
+  }
+  .legend-item{ display:flex; align-items:center; gap:6px; color:var(--muted); font-weight:600; }
+  .legend-item b{ color:var(--ink); font-weight:700; }
+  .dot{ width:9px;height:9px;border-radius:50%; flex:none; }
+  .tip{
+    font-size:12px;
+    color:var(--faint);
+    text-align:center;
+    margin-top:14px;
+    line-height:1.5;
+  }
+  /* ---------- KPI grid ---------- */
+  .kpi-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:4px;
+  }
+  .kpi{
+    background:var(--bg);
+    border-radius:14px;
+    padding:12px 14px;
+  }
+  .kpi .label{ font-size:11.5px; color:var(--muted); font-weight:600; }
+  .kpi .value{ font-size:18px; font-weight:800; margin-top:2px; font-variant-numeric:tabular-nums; }
+  .kpi.warn .value{ color:var(--danger); }
+  .kpi.good .value{ color:var(--success); }
+  /* ---------- Editable salary ---------- */
+  .salary-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+  }
+  .salary-row .value{ font-size:22px; font-weight:800; }
+  .ghost-btn{
+    border:1px solid var(--border);
+    background:var(--card);
+    color:var(--primary);
+    border-radius:10px;
+    padding:7px 12px;
+    font-size:13px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .edit-row{ display:flex; gap:8px; margin-top:10px; }
+  input, select{
+    font-family:inherit;
+    font-size:15px;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1px solid var(--border);
+    background:var(--bg);
+    color:var(--ink);
+    width:100%;
+  }
+  input:focus, select:focus{ outline:2px solid var(--primary); outline-offset:1px; }
+  .hidden{ display:none !important; }
+  /* ---------- Quick add form ---------- */
+  .quick-form{ display:flex; flex-direction:column; gap:10px; }
+  .quick-form .row{ display:flex; gap:8px; }
+  .quick-form .row > *{ flex:1; }
+  .primary-btn{
+    background:var(--primary);
+    color:#fff;
+    border:none;
+    border-radius:12px;
+    padding:12px 16px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+  }
+  .primary-btn:active{ background:var(--primary-ink); }
+  /* ---------- Lists ---------- */
+  .list{ display:flex; flex-direction:column; }
+  .list-item{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px 0;
+    border-bottom:1px solid var(--border);
+  }
+  .list-item:last-child{ border-bottom:none; }
+  .cat-dot{ width:10px;height:10px;border-radius:50%; flex:none; }
+  .list-item .info{ flex:1; min-width:0; }
+  .list-item .name{ font-size:14.5px; font-weight:600; }
+  .list-item .meta{ font-size:12px; color:var(--muted); }
+  .list-item .amt{ font-size:14.5px; font-weight:700; white-space:nowrap; }
+  .list-item .amt.expense{ color:var(--danger); }
+  .list-item .del{
+    width:26px;height:26px;
+    border-radius:50%;
+    border:none;
+    background:var(--bg);
+    color:var(--muted);
+    font-size:13px;
+    cursor:pointer;
+    flex:none;
+  }
+  .empty-note{ color:var(--faint); font-size:13px; text-align:center; padding:14px 0; }
+  /* ---------- Details/summary ---------- */
+  details summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  details summary::-webkit-details-marker{ display:none; }
+  summary .chev{ transition:transform .15s ease; color:var(--muted); }
+  details[open] summary .chev{ transform:rotate(90deg); }
+  details .content{ margin-top:12px; }
+  /* ---------- Goal ---------- */
+  .goal-name{ font-size:15px; font-weight:700; margin-bottom:6px; }
+  .bar-track{
+    width:100%; height:10px;
+    background:var(--bg);
+    border-radius:6px;
+    overflow:hidden;
+  }
+  .bar-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--accent-ink), var(--accent));
+    border-radius:6px;
+  }
+  .goal-meta{
+    display:flex; justify-content:space-between;
+    font-size:12.5px; color:var(--muted); margin-top:6px;
+  }
+  /* ---------- Footer / modal ---------- */
+  .footer-row{ display:flex; gap:10px; }
+  .footer-row .ghost-btn{ flex:1; text-align:center; }
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(16,23,40,.5);
+    display:flex; align-items:flex-end; justify-content:center;
+    z-index:50;
+  }
+  .modal{
+    background:var(--card);
+    width:100%; max-width:480px;
+    border-radius:20px 20px 0 0;
+    padding:22px 20px calc(env(safe-area-inset-bottom) + 22px);
+    max-height:80vh;
+    overflow:auto;
+  }
+  .modal h3{ margin:0 0 10px; font-size:17px; }
+  .modal p{ font-size:14px; color:var(--muted); line-height:1.55; }
+  .modal .close{
+    display:block; margin:16px auto 0;
+  }
+  small.legend-note{ color:var(--faint); font-size:11.5px; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="topbar">
+    <h1>💶 Meine Finanzen</h1>
+    <button class="icon-btn" id="infoBtn" aria-label="Info">ⓘ</button>
+  </div>
+
+  <div class="month-nav">
+    <button id="prevMonth" aria-label="Vorheriger Monat">‹</button>
+    <span class="label" id="monthLabel">August 2026</span>
+    <button id="nextMonth" aria-label="Nächster Monat">›</button>
+  </div>
+
+  <!-- HERO: Gehalt-Verteilung -->
+  <div class="card hero">
+    <div class="ring-wrap">
+      <div class="ring" id="heroRing"></div>
+      <div class="ring-hole">
+        <div class="amount" id="heroAmount">0 €</div>
+        <div class="caption" id="heroCaption">verfügbar</div>
+      </div>
+    </div>
+    <div class="legend" id="heroLegend"></div>
+    <div class="tip" id="heroTip"></div>
+
+    <div class="kpi-grid">
+      <div class="kpi">
+        <div class="label">Gehalt (netto)</div>
+        <div class="value" id="kpiGehalt">0 €</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Fixkosten</div>
+        <div class="value" id="kpiFixkosten">0 €</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Ausgaben (Monat)</div>
+        <div class="value" id="kpiAusgaben">0 €</div>
+      </div>
+      <div class="kpi" id="kpiSparquoteCard">
+        <div class="label">Sparquote</div>
+        <div class="value" id="kpiSparquote">0 %</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Gehalt bearbeiten -->
+  <div class="card">
+    <h2>Nettogehalt</h2>
+    <div class="salary-row">
+      <div class="value" id="salaryDisplay">0 €</div>
+      <button class="ghost-btn" id="editSalaryBtn">Bearbeiten</button>
+    </div>
+    <div class="edit-row hidden" id="salaryEditRow">
+      <input type="number" inputmode="decimal" id="salaryInput" placeholder="z. B. 2850">
+      <button class="primary-btn" id="saveSalaryBtn">Speichern</button>
+    </div>
+  </div>
+
+  <!-- Schnelleingabe -->
+  <div class="card">
+    <h2>Ausgabe erfassen</h2>
+    <form class="quick-form" id="expenseForm">
+      <div class="row">
+        <input type="number" inputmode="decimal" step="0.01" min="0" id="expBetrag" placeholder="Betrag (€)" required>
+        <select id="expKategorie" required></select>
+      </div>
+      <input type="text" id="expBeschreibung" placeholder="Beschreibung (optional)">
+      <button type="submit" class="primary-btn">+ Hinzufügen</button>
+    </form>
+  </div>
+
+  <!-- Ausgaben-Liste -->
+  <div class="card">
+    <h2>Ausgaben diesen Monat</h2>
+    <div class="list" id="expenseList"></div>
+  </div>
+
+  <!-- Fixkosten -->
+  <div class="card">
+    <details id="fixkostenDetails">
+      <summary><h2 style="margin:0;display:inline">Fixkosten verwalten</h2><span class="chev">›</span></summary>
+      <div class="content">
+        <div class="list" id="fixList"></div>
+        <form class="quick-form" id="fixForm" style="margin-top:12px">
+          <input type="text" id="fixName" placeholder="Bezeichnung (z. B. Miete)" required>
+          <div class="row">
+            <input type="number" inputmode="decimal" step="0.01" min="0" id="fixBetrag" placeholder="Betrag (€)" required>
+            <select id="fixKategorie" required></select>
+          </div>
+          <button type="submit" class="primary-btn">+ Fixkosten hinzufügen</button>
+        </form>
+      </div>
+    </details>
+  </div>
+
+  <!-- Sparziel -->
+  <div class="card">
+    <h2>🎯 Sparziel</h2>
+    <div id="goalNone">
+      <p class="empty-note" style="padding-top:0">Noch kein Sparziel angelegt.</p>
+      <form class="quick-form" id="goalForm">
+        <input type="text" id="goalName" placeholder="Ziel (z. B. neues Rennrad)" required>
+        <input type="number" inputmode="decimal" step="0.01" min="0" id="goalZiel" placeholder="Zielbetrag (€)" required>
+        <button type="submit" class="primary-btn">Sparziel anlegen</button>
+      </form>
+    </div>
+    <div id="goalSet" class="hidden">
+      <div class="goal-name" id="goalNameOut"></div>
+      <div class="bar-track"><div class="bar-fill" id="goalBar" style="width:0%"></div></div>
+      <div class="goal-meta">
+        <span id="goalStandOut"></span>
+        <span id="goalPctOut"></span>
+      </div>
+      <div class="footer-row" style="margin-top:12px">
+        <button class="ghost-btn" id="goalAddBtn">+ Sparbeitrag</button>
+        <button class="ghost-btn" id="goalDeleteBtn">Ziel löschen</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Kategorien-Verteilung -->
+  <div class="card">
+    <h2>Kategorien-Verteilung (Fixkosten + Ausgaben)</h2>
+    <div style="display:flex;align-items:center;gap:18px">
+      <div class="ring-wrap" style="width:110px;height:110px;flex:none">
+        <div class="ring" id="catRing" style="width:110px;height:110px"></div>
+        <div class="ring-hole" style="top:12px;left:12px;right:12px;bottom:12px">
+          <div class="caption" style="margin-top:0">gesamt</div>
+        </div>
+      </div>
+      <div class="list" id="catLegend" style="flex:1"></div>
+    </div>
+  </div>
+
+  <!-- Backup -->
+  <div class="card">
+    <h2>Daten sichern</h2>
+    <p style="font-size:12.5px;color:var(--muted);margin:0 0 12px;line-height:1.5">
+      Alle Angaben werden ausschließlich lokal auf diesem Gerät gespeichert. Regelmäßiges Exportieren schützt vor Datenverlust.
+    </p>
+    <div class="footer-row">
+      <button class="ghost-btn" id="exportBtn">Exportieren</button>
+      <button class="ghost-btn" id="importBtn">Importieren</button>
+      <input type="file" id="importFile" accept="application/json" class="hidden">
+    </div>
+  </div>
+
+  <div style="text-align:center">
+    <button class="ghost-btn" id="resetBtn" style="color:var(--danger);border-color:var(--danger-bg)">Alle Daten löschen</button>
+  </div>
+
+</div>
+
+<div class="modal-backdrop hidden" id="infoModal">
+  <div class="modal">
+    <h3>So funktioniert die App</h3>
+    <p>Trage oben dein monatliches Nettogehalt sowie deine Fixkosten ein (Miete, Versicherungen, Abos, ...). Ausgaben erfasst du direkt über das Formular „Ausgabe erfassen" – die Übersicht aktualisiert sich sofort.</p>
+    <p>Mit den Pfeilen neben dem Monat kannst du zwischen Monaten wechseln und deine bisherigen Ausgaben einsehen. Fixkosten und Gehalt gelten dabei als aktuell hinterlegter Stand.</p>
+    <p><b>Offline nutzen:</b> Nach dem ersten Öffnen wird die App automatisch für die Offline-Nutzung zwischengespeichert. Über „Zum Home-Bildschirm hinzufügen" in Safari bekommst du ein eigenes App-Icon, das die App im Vollbild startet – ganz ohne Adressleiste, kein Internet nötig.</p>
+    <p>Nutze „Exportieren", um regelmäßig eine Sicherungskopie deiner Daten zu speichern.</p>
+    <button class="ghost-btn close" id="closeInfo">Schließen</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "finanztool-data-v1";
+  var MONTHS = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+
+  var CATEGORIES = [
+    {id:"wohnen", label:"Wohnen", color:"#1F4E78"},
+    {id:"lebensmittel", label:"Lebensmittel", color:"#4C8C4A"},
+    {id:"transport", label:"Transport", color:"#B5651D"},
+    {id:"gesundheit", label:"Gesundheit", color:"#7B5EA7"},
+    {id:"versicherungen", label:"Versicherungen", color:"#2E8B8B"},
+    {id:"sport", label:"Sport & Freizeit", color:"#C9922A"},
+    {id:"reisen", label:"Reisen", color:"#3B82C4"},
+    {id:"kleidung", label:"Kleidung", color:"#C4547D"},
+    {id:"abos", label:"Abos & Fixkosten", color:"#6B7686"},
+    {id:"sonstiges", label:"Sonstiges", color:"#A8A29E"}
+  ];
+  function catById(id){
+    for(var i=0;i<CATEGORIES.length;i++){ if(CATEGORIES[i].id===id) return CATEGORIES[i]; }
+    return CATEGORIES[CATEGORIES.length-1];
+  }
+
+  function defaultState(){
+    return { gehalt:0, fixkosten:[], ausgaben:[], sparziel:null };
+  }
+
+  function load(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      return Object.assign(defaultState(), parsed);
+    }catch(e){
+      console.warn("Konnte gespeicherte Daten nicht laden, starte neu.", e);
+      return defaultState();
+    }
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.warn("Speichern fehlgeschlagen", e); }
+  }
+
+  var state = load();
+  var today = new Date();
+  var viewYear = today.getFullYear();
+  var viewMonth = today.getMonth(); // 0-11
+
+  var fmt = new Intl.NumberFormat("de-DE", {style:"currency", currency:"EUR", maximumFractionDigits:0});
+  var fmt2 = new Intl.NumberFormat("de-DE", {style:"currency", currency:"EUR", maximumFractionDigits:2});
+
+  function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function monthKey(y,m){ return y + "-" + String(m+1).padStart(2,"0"); }
+  function pad2(n){ return String(n).padStart(2,"0"); }
+
+  // ---------- Populate category selects ----------
+  function fillCategorySelect(sel){
+    sel.innerHTML = "";
+    CATEGORIES.forEach(function(c){
+      var opt = document.createElement("option");
+      opt.value = c.id; opt.textContent = c.label;
+      sel.appendChild(opt);
+    });
+  }
+  fillCategorySelect(document.getElementById("expKategorie"));
+  fillCategorySelect(document.getElementById("fixKategorie"));
+
+  // ---------- Conic gradient helper ----------
+  function buildConicGradient(segments){
+    // segments: [{value, color}], skips zero values, returns css string
+    var total = segments.reduce(function(s,x){return s+Math.max(x.value,0);},0);
+    if(total <= 0){
+      return "conic-gradient(var(--border) 0deg 360deg)";
+    }
+    var acc = 0;
+    var stops = [];
+    segments.forEach(function(seg){
+      if(seg.value <= 0) return;
+      var start = acc/total*360;
+      acc += seg.value;
+      var end = acc/total*360;
+      stops.push(seg.color + " " + start.toFixed(2) + "deg " + end.toFixed(2) + "deg");
+    });
+    return "conic-gradient(" + stops.join(", ") + ")";
+  }
+
+  // ---------- Computations ----------
+  function fixkostenGesamt(){
+    return state.fixkosten.reduce(function(s,f){ return s + Number(f.betrag||0); }, 0);
+  }
+  function ausgabenForMonth(y,m){
+    var key = monthKey(y,m);
+    return state.ausgaben.filter(function(a){ return a.datum.slice(0,7) === key; });
+  }
+  function ausgabenGesamtForMonth(y,m){
+    return ausgabenForMonth(y,m).reduce(function(s,a){ return s + Number(a.betrag||0); }, 0);
+  }
+
+  // ---------- Rendering ----------
+  function render(){
+    document.getElementById("monthLabel").textContent = MONTHS[viewMonth] + " " + viewYear;
+
+    var gehalt = Number(state.gehalt||0);
+    var fix = fixkostenGesamt();
+    var ausg = ausgabenGesamtForMonth(viewYear, viewMonth);
+    var rest = gehalt - fix - ausg;
+
+    document.getElementById("salaryDisplay").textContent = fmt2.format(gehalt);
+    document.getElementById("kpiGehalt").textContent = fmt.format(gehalt);
+    document.getElementById("kpiFixkosten").textContent = fmt.format(fix);
+    document.getElementById("kpiAusgaben").textContent = fmt.format(ausg);
+
+    var sparquote = gehalt > 0 ? (rest/gehalt) : 0;
+    var sparquoteCard = document.getElementById("kpiSparquoteCard");
+    document.getElementById("kpiSparquote").textContent = (sparquote*100).toFixed(0) + " %";
+    sparquoteCard.classList.remove("warn","good");
+    if(rest < 0) sparquoteCard.classList.add("warn"); else if(sparquote >= 0.1) sparquoteCard.classList.add("good");
+
+    // Hero ring
+    var heroAmount = document.getElementById("heroAmount");
+    var heroCaption = document.getElementById("heroCaption");
+    var heroRing = document.getElementById("heroRing");
+    var heroTip = document.getElementById("heroTip");
+    var heroLegend = document.getElementById("heroLegend");
+
+    if(gehalt <= 0){
+      heroRing.style.background = "conic-gradient(var(--border) 0deg 360deg)";
+      heroAmount.textContent = "–";
+      heroAmount.classList.remove("negative");
+      heroCaption.textContent = "Gehalt eintragen";
+      heroTip.textContent = "Trage unten dein Nettogehalt ein, um deine Übersicht zu sehen.";
+      heroLegend.innerHTML = "";
+    } else if(rest < 0){
+      heroRing.style.background = "conic-gradient(var(--danger) 0deg 360deg)";
+      heroAmount.textContent = fmt.format(rest);
+      heroAmount.classList.add("negative");
+      heroCaption.textContent = "über dem Gehalt";
+      heroTip.textContent = "Fixkosten und Ausgaben liegen aktuell über deinem Gehalt.";
+      heroLegend.innerHTML = "";
+    } else {
+      var segs = [
+        {label:"Fixkosten", value:fix, color:"var(--primary)"},
+        {label:"Ausgaben", value:ausg, color:"#B5651D"},
+        {label:"Frei / Sparen", value:rest, color:"var(--accent)"}
+      ];
+      heroRing.style.background = buildConicGradient([
+        {value:fix, color:"#1F4E78"},
+        {value:ausg, color:"#B5651D"},
+        {value:rest, color:"#C9922A"}
+      ]);
+      heroAmount.classList.remove("negative");
+      heroAmount.textContent = fmt.format(rest);
+      heroCaption.textContent = "frei verfügbar";
+      var empfohlen = gehalt*0.2;
+      heroTip.textContent = "Faustregel (20 % des Gehalts sparen): ca. " + fmt.format(empfohlen) + " – keine persönliche Finanzberatung.";
+      heroLegend.innerHTML = segs.map(function(s){
+        return '<span class="legend-item"><span class="dot" style="background:'+s.color+'"></span>'+s.label+' <b>'+fmt.format(s.value)+'</b></span>';
+      }).join("");
+    }
+
+    // Expense list
+    var list = ausgabenForMonth(viewYear, viewMonth).slice().sort(function(a,b){ return b.datum.localeCompare(a.datum); });
+    var expenseListEl = document.getElementById("expenseList");
+    if(list.length === 0){
+      expenseListEl.innerHTML = '<div class="empty-note">Noch keine Ausgaben in diesem Monat erfasst.</div>';
+    } else {
+      expenseListEl.innerHTML = list.map(function(a){
+        var c = catById(a.kategorie);
+        var d = new Date(a.datum);
+        var dateStr = pad2(d.getDate()) + "." + pad2(d.getMonth()+1) + ".";
+        return '<div class="list-item">'
+          + '<span class="cat-dot" style="background:'+c.color+'"></span>'
+          + '<div class="info"><div class="name">'+(escapeHtml(a.beschreibung)||c.label)+'</div>'
+          + '<div class="meta">'+dateStr+' · '+c.label+'</div></div>'
+          + '<div class="amt expense">-'+fmt2.format(a.betrag)+'</div>'
+          + '<button class="del" data-del-exp="'+a.id+'" aria-label="Löschen">✕</button>'
+          + '</div>';
+      }).join("");
+    }
+
+    // Fixkosten list
+    var fixListEl = document.getElementById("fixList");
+    if(state.fixkosten.length === 0){
+      fixListEl.innerHTML = '<div class="empty-note">Noch keine Fixkosten hinterlegt.</div>';
+    } else {
+      fixListEl.innerHTML = state.fixkosten.map(function(f){
+        var c = catById(f.kategorie);
+        return '<div class="list-item">'
+          + '<span class="cat-dot" style="background:'+c.color+'"></span>'
+          + '<div class="info"><div class="name">'+escapeHtml(f.name)+'</div>'
+          + '<div class="meta">'+c.label+' · monatlich</div></div>'
+          + '<div class="amt">'+fmt2.format(f.betrag)+'</div>'
+          + '<button class="del" data-del-fix="'+f.id+'" aria-label="Löschen">✕</button>'
+          + '</div>';
+      }).join("");
+    }
+
+    // Sparziel
+    var goalNone = document.getElementById("goalNone");
+    var goalSet = document.getElementById("goalSet");
+    if(!state.sparziel){
+      goalNone.classList.remove("hidden");
+      goalSet.classList.add("hidden");
+    } else {
+      goalNone.classList.add("hidden");
+      goalSet.classList.remove("hidden");
+      var g = state.sparziel;
+      var pct = g.ziel > 0 ? Math.min(100, (g.stand/g.ziel)*100) : 0;
+      document.getElementById("goalNameOut").textContent = g.name;
+      document.getElementById("goalBar").style.width = pct.toFixed(1)+"%";
+      document.getElementById("goalStandOut").textContent = fmt2.format(g.stand) + " von " + fmt2.format(g.ziel);
+      document.getElementById("goalPctOut").textContent = pct.toFixed(0) + " %";
+    }
+
+    // Category ring (fixkosten + ausgaben, this month)
+    var catTotals = {};
+    state.fixkosten.forEach(function(f){ catTotals[f.kategorie] = (catTotals[f.kategorie]||0) + Number(f.betrag||0); });
+    ausgabenForMonth(viewYear, viewMonth).forEach(function(a){ catTotals[a.kategorie] = (catTotals[a.kategorie]||0) + Number(a.betrag||0); });
+    var catSegments = CATEGORIES.map(function(c){ return {value: catTotals[c.id]||0, color:c.color, label:c.label}; }).filter(function(s){ return s.value>0; });
+    var catRing = document.getElementById("catRing");
+    var catLegend = document.getElementById("catLegend");
+    if(catSegments.length === 0){
+      catRing.style.background = "conic-gradient(var(--border) 0deg 360deg)";
+      catLegend.innerHTML = '<div class="empty-note">Noch keine Daten.</div>';
+    } else {
+      catRing.style.background = buildConicGradient(catSegments);
+      var catTotal = catSegments.reduce(function(s,x){return s+x.value;},0);
+      catSegments.sort(function(a,b){ return b.value-a.value; });
+      catLegend.innerHTML = catSegments.map(function(s){
+        var pct = (s.value/catTotal*100).toFixed(0);
+        return '<div class="list-item" style="padding:6px 0">'
+          + '<span class="cat-dot" style="background:'+s.color+'"></span>'
+          + '<div class="info"><div class="name" style="font-weight:600;font-size:13px">'+s.label+'</div></div>'
+          + '<div class="amt" style="font-size:13px">'+fmt.format(s.value)+' <small class="legend-note">'+pct+'%</small></div>'
+          + '</div>';
+      }).join("");
+    }
+  }
+
+  function escapeHtml(str){
+    if(!str) return "";
+    return str.replace(/[&<>"']/g, function(c){
+      return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+    });
+  }
+
+  // ---------- Event handlers ----------
+  document.getElementById("prevMonth").addEventListener("click", function(){
+    viewMonth--; if(viewMonth<0){ viewMonth=11; viewYear--; }
+    render();
+  });
+  document.getElementById("nextMonth").addEventListener("click", function(){
+    viewMonth++; if(viewMonth>11){ viewMonth=0; viewYear++; }
+    render();
+  });
+
+  document.getElementById("editSalaryBtn").addEventListener("click", function(){
+    var row = document.getElementById("salaryEditRow");
+    row.classList.toggle("hidden");
+    var input = document.getElementById("salaryInput");
+    input.value = state.gehalt || "";
+    input.focus();
+  });
+  document.getElementById("saveSalaryBtn").addEventListener("click", function(){
+    var val = parseFloat(document.getElementById("salaryInput").value);
+    state.gehalt = isNaN(val) ? 0 : val;
+    save();
+    document.getElementById("salaryEditRow").classList.add("hidden");
+    render();
+  });
+
+  document.getElementById("expenseForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var betrag = parseFloat(document.getElementById("expBetrag").value);
+    if(isNaN(betrag) || betrag<=0) return;
+    var kategorie = document.getElementById("expKategorie").value;
+    var beschreibung = document.getElementById("expBeschreibung").value.trim();
+    var datum = new Date(viewYear, viewMonth, Math.min(today.getDate(), 28));
+    if(viewYear===today.getFullYear() && viewMonth===today.getMonth()){ datum = today; }
+    var iso = datum.getFullYear()+"-"+pad2(datum.getMonth()+1)+"-"+pad2(datum.getDate());
+    state.ausgaben.push({id:uid(), betrag:betrag, kategorie:kategorie, beschreibung:beschreibung, datum:iso});
+    save();
+    document.getElementById("expenseForm").reset();
+    render();
+  });
+
+  document.getElementById("expenseList").addEventListener("click", function(e){
+    var id = e.target.getAttribute("data-del-exp");
+    if(!id) return;
+    state.ausgaben = state.ausgaben.filter(function(a){ return a.id!==id; });
+    save(); render();
+  });
+
+  document.getElementById("fixForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("fixName").value.trim();
+    var betrag = parseFloat(document.getElementById("fixBetrag").value);
+    if(!name || isNaN(betrag) || betrag<=0) return;
+    var kategorie = document.getElementById("fixKategorie").value;
+    state.fixkosten.push({id:uid(), name:name, betrag:betrag, kategorie:kategorie});
+    save();
+    document.getElementById("fixForm").reset();
+    render();
+  });
+  document.getElementById("fixList").addEventListener("click", function(e){
+    var id = e.target.getAttribute("data-del-fix");
+    if(!id) return;
+    state.fixkosten = state.fixkosten.filter(function(f){ return f.id!==id; });
+    save(); render();
+  });
+
+  document.getElementById("goalForm").addEventListener("submit", function(e){
+    e.preventDefault();
+    var name = document.getElementById("goalName").value.trim();
+    var ziel = parseFloat(document.getElementById("goalZiel").value);
+    if(!name || isNaN(ziel) || ziel<=0) return;
+    state.sparziel = {name:name, ziel:ziel, stand:0};
+    save();
+    document.getElementById("goalForm").reset();
+    render();
+  });
+  document.getElementById("goalAddBtn").addEventListener("click", function(){
+    var val = prompt("Sparbeitrag in €:");
+    if(val===null) return;
+    var num = parseFloat(val.replace(",","."));
+    if(isNaN(num) || num<=0) return;
+    state.sparziel.stand = Number(state.sparziel.stand||0) + num;
+    save(); render();
+  });
+  document.getElementById("goalDeleteBtn").addEventListener("click", function(){
+    if(!confirm("Sparziel wirklich löschen?")) return;
+    state.sparziel = null;
+    save(); render();
+  });
+
+  // Info modal
+  document.getElementById("infoBtn").addEventListener("click", function(){
+    document.getElementById("infoModal").classList.remove("hidden");
+  });
+  document.getElementById("closeInfo").addEventListener("click", function(){
+    document.getElementById("infoModal").classList.add("hidden");
+  });
+  document.getElementById("infoModal").addEventListener("click", function(e){
+    if(e.target.id==="infoModal") e.currentTarget.classList.add("hidden");
+  });
+
+  // Backup
+  document.getElementById("exportBtn").addEventListener("click", function(){
+    var blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    var stamp = today.getFullYear()+"-"+pad2(today.getMonth()+1)+"-"+pad2(today.getDate());
+    a.href = url; a.download = "finanzen-backup-"+stamp+".json";
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById("importBtn").addEventListener("click", function(){
+    document.getElementById("importFile").click();
+  });
+  document.getElementById("importFile").addEventListener("change", function(e){
+    var file = e.target.files[0];
+    if(!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      try{
+        var data = JSON.parse(reader.result);
+        if(!confirm("Aktuelle Daten mit der Sicherung überschreiben?")) return;
+        state = Object.assign(defaultState(), data);
+        save(); render();
+      }catch(err){
+        alert("Diese Datei konnte nicht gelesen werden.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(!confirm("Wirklich ALLE Daten unwiderruflich löschen?")) return;
+    state = defaultState();
+    save(); render();
+  });
+
+  render();
+
+  // Service Worker registrieren, damit die App offline funktioniert und wie eine
+  // installierte App startet (nur wirksam, wenn über https/localhost aufgerufen).
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("service-worker.js").catch(function (err) {
+        console.warn("Service Worker konnte nicht registriert werden:", err);
+      });
+    });
+  }
+})();
+</script>
+</body>
+</html>
